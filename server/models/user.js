@@ -36,6 +36,7 @@ var UserShema = new mongoose.Schema(
     }
 );
 
+//.methods : Instance Method
 UserShema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
@@ -43,7 +44,7 @@ UserShema.methods.toJSON = function () {
 };
 
 UserShema.methods.generateAuthToken = function () {
-    var user = this;
+    var user = this;    //
     var access = 'auth';
     var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
@@ -52,6 +53,32 @@ UserShema.methods.generateAuthToken = function () {
     return user.save().then(()=>{
         return token;
     });
+};
+
+//.statics : Model Method 
+UserShema.statics.findByToken = function (token){
+    var User = this;    //Model as the "binding"      
+    var decoded;        //store jwt values
+
+    try{
+        decoded = jwt.verify(token, 'abc123');
+    } catch(e){
+        /*
+        return new Promise((resolve,reject)=>{
+            reject();
+        });
+        */
+        return Promise.reject();
+    }
+
+    //query id + nested document "tokens"
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+
+
 };
 
 var User = mongoose.model('User', UserShema);
