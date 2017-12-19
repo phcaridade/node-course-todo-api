@@ -56,6 +56,19 @@ UserShema.methods.generateAuthToken = function () {
     });
 };
 
+UserShema.methods.removeToken = function(token){
+    var user = this;
+
+    return user.update({
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+    
+};
+
 //.statics : Model Method 
 UserShema.statics.findByToken = function (token){
     var User = this;    //Model as the "binding"      
